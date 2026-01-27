@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>دكانك استور | Dokkanak Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #050505;
+            --bg-gradient: radial-gradient(circle at top right, #1a1a1a, #000000);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --glass-blur: blur(15px);
+            
+            --gold-primary: #FFD700;
+            --gold-gradient: linear-gradient(135deg, #FFD700, #FDB931);
+            --gold-glow: 0 0 15px rgba(255, 215, 0, 0.3);
+            
+            --text-main: #ffffff;
+            --text-muted: #888888;
+            
+            --danger: #ff4757;
+            --success: #2ed573;
+        }
+
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            margin: 0; padding: 0; 
+            font-family: 'Cairo', sans-serif; 
+            background: var(--bg-dark); 
+            background-image: var(--bg-gradient);
+            color: var(--text-main); 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* --- Auth View --- */
+        #auth-view {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: black; 
+            background-image: radial-gradient(circle at 50% 0%, rgba(255, 215, 0, 0.15), transparent 50%);
+            z-index: 5000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 25px;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: var(--glass-blur);
+            -webkit-backdrop-filter: var(--glass-blur);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 30px;
+            width: 100%; max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            animation: fadeInUp 0.6s ease-out;
+            position: relative;
+        }
+
+        .auth-logo { 
+            font-size: 35px; font-weight: 900; 
+            background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 40px; 
+            text-align: center;
+            filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.2));
+        }
+
+        /* --- Inputs & Forms --- */
+        .input-group { position: relative; margin-bottom: 20px; }
+        .input-label { 
+            position: absolute; top: -10px; right: 15px; 
+            background: #000; padding: 0 8px; color: var(--gold-primary); 
+            font-size: 12px; font-weight: bold; border-radius: 5px;
+        }
+        
+        .modern-input, .modern-select {
+            width: 100%; padding: 16px; 
+            background: rgba(0,0,0,0.4); 
+            border: 1px solid var(--glass-border); 
+            border-radius: 12px;
+            color: white; font-family: 'Cairo'; font-size: 15px;
+            transition: 0.3s all;
+        }
+        .modern-input:focus, .modern-select:focus {
+            border-color: var(--gold-primary);
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
+            background: rgba(0,0,0,0.6);
+        }
+
+        /* --- Buttons --- */
+        .btn-main {
+            background: var(--gold-gradient);
+            color: #000; border: none; width: 100%; padding: 16px;
+            border-radius: 14px; font-weight: 800; font-size: 16px;
+            cursor: pointer; box-shadow: var(--gold-glow);
+            transition: 0.3s; margin-top: 10px;
+        }
+        .btn-main:active { transform: scale(0.96); }
+
+        .btn-ghost {
+            background: rgba(255,255,255,0.05); color: var(--text-sec);
+            width: 100%; padding: 12px; border-radius: 12px; border: 1px solid var(--glass-border);
+            cursor: pointer; font-size: 13px; margin-top: 15px;
+        }
+
+        /* --- Navbar (Top Buttons) --- */
+        .navbar {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+            padding: 10px 15px; position: sticky; top: 0; z-index: 1000;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .nav-logo { font-size: 18px; font-weight: 900; color: white; display: flex; align-items: center; gap: 8px; }
+        .nav-logo i { color: var(--gold-primary); }
+
+        /* زر الشحن المميز في الأعلى */
+        .recharge-btn {
+            background: linear-gradient(90deg, #FDB931, #FFD700);
+            color: black;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-weight: 900;
+            font-size: 13px;
+            display: flex; align-items: center; gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 6px rgba(255, 215, 0, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+        }
+
+        /* زر الإشعارات في الأعلى */
+        .notif-btn {
+            position: relative; width: 35px; height: 35px; 
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+            cursor: pointer; margin-left: 8px;
+        }
+        .notif-btn i { color: var(--gold-primary); font-size: 16px; }
+
+        /* --- Main Content --- */
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; animation: fadeInUp 0.8s ease-out; }
+        #main-view { display: none; }
+
+        .section-title {
+            color: var(--text-muted); font-size: 14px; font-weight: 600; 
+            margin-bottom: 15px; display: block; border-right: 3px solid var(--gold-primary);
+            padding-right: 10px;
+        }
+
+        /* Stats Grid */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 20px; }
+        .stat-box {
+            background: rgba(255,255,255,0.02); border: 1px solid var(--glass-border);
+            border-radius: 12px; padding: 15px; text-align: center;
+        }
+        .stat-val { font-size: 18px; font-weight: 800; color: var(--gold-primary); display: block; }
+        .stat-lbl { font-size: 11px; color: var(--text-muted); }
+
+        /* Warnings */
+        .warning-card {
+            background: rgba(255, 71, 87, 0.05); border: 1px dashed rgba(255, 71, 87, 0.3);
+            border-radius: 12px; padding: 15px; margin-top: 20px;
+        }
+        .w-item { display: flex; gap: 10px; font-size: 12px; color: #ffd1d1; margin-bottom: 8px; align-items: start; }
+        .w-item i { color: var(--danger); margin-top: 3px; }
+
+        /* Price Area */
+        .price-area {
+            background: linear-gradient(to right, rgba(255, 215, 0, 0.05), transparent);
+            border-right: 4px solid var(--gold-primary);
+            border-radius: 8px; padding: 15px; margin-top: 25px;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        /* --- Modals --- */
+        .overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.85); z-index: 3000; display: none; 
+            align-items: center; justify-content: center; backdrop-filter: blur(10px); 
+        }
+
+        /* Notification List Style */
+        .notif-item {
+            padding: 12px; border-bottom: 1px solid var(--glass-border);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .notif-icon {
+            width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: bold; flex-shrink: 0;
+        }
+        .n-success { background: rgba(46, 213, 115, 0.1); color: var(--success); }
+        .n-pending { background: rgba(255, 215, 0, 0.1); color: var(--gold-primary); }
+        .n-fail { background: rgba(255, 71, 87, 0.1); color: var(--danger); }
+        .notif-text { font-size: 12px; color: #ddd; }
+        .notif-time { font-size: 10px; color: #777; display: block; margin-top: 4px; }
+
+    </style>
+</head>
+<body>
+
+    <div id="auth-view">
+        <div class="auth-logo"><i class="fa-solid fa-crown"></i> دكانك استور</div>
+        
+        <div id="login-box" class="glass-card">
+            <h2 style="margin:0 0 25px; text-align:center;">مرحباً بك 👋</h2>
+            <div class="input-group">
+                <span class="input-label">رقم الهاتف</span>
+                <input id="l-phone" class="modern-input" placeholder="01xxxxxxxxx" type="tel">
+            </div>
+            <div class="input-group">
+                <span class="input-label">كلمة المرور</span>
+                <input id="l-pass" class="modern-input" placeholder="••••••" type="password">
+            </div>
+            <button class="btn-main" onclick="login()">تسجيل الدخول</button>
+            <button class="btn-ghost" onclick="toggleAuth('signup')">ليس لديك حساب؟ إنشاء حساب جديد</button>
+        </div>
+
+        <div id="signup-box" class="glass-card" style="display:none;">
+            <h2 style="margin:0 0 25px; text-align:center;">حساب جديد 🚀</h2>
+            <div class="input-group">
+                <span class="input-label">الاسم</span>
+                <input id="s-name" class="modern-input" placeholder="اسمك الثنائي">
+            </div>
+            <div class="input-group">
+                <span class="input-label">رقم الهاتف</span>
+                <input id="s-phone" class="modern-input" placeholder="01xxxxxxxxx" type="tel">
+            </div>
+            <div class="input-group">
+                <span class="input-label">كلمة المرور</span>
+                <input id="s-pass" class="modern-input" placeholder="••••••" type="password">
+            </div>
+            <button class="btn-main" onclick="register()">انضم إلينا</button>
+            <button class="btn-ghost" onclick="toggleAuth('login')">لديك حساب؟ تسجيل الدخول</button>
+        </div>
+    </div>
+
+    <div id="main-view">
+        <nav class="navbar">
+            <div class="nav-logo">دكانك استور</div>
+            
+            <div style="display:flex; gap:10px; align-items:center;">
+                <div class="notif-btn" onclick="openNotifications()">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+
+                <div class="recharge-btn" onclick="openRecharge()">
+                    <i class="fa-solid fa-plus"></i>
+                    <span>اضغط للشحن</span>
+                    <span style="background:rgba(0,0,0,0.2); padding:2px 6px; border-radius:4px; margin-right:5px;" id="nav-bal">0.0</span>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container">
+            
+            <div class="glass-card" style="margin-bottom: 80px;">
+                <span class="section-title">طلب خدمة جديدة</span>
+                
+                <div class="input-group">
+                    <span class="input-label">القسم</span>
+                    <select id="cat-select" class="modern-select" onchange="filterServices()">
+                        <option value="">اختر القسم...</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <span class="input-label">الخدمة</span>
+                    <select id="service-select" class="modern-select" onchange="updateServiceDetails()">
+                        <option value="">-- اختر القسم أولاً --</option>
+                    </select>
+                </div>
+
+                <div id="rate-hint" style="font-size:12px; color:var(--gold-primary); margin-bottom:15px; display:none; background:rgba(255,215,0,0.05); padding:8px; border-radius:8px;">
+                    <i class="fa-solid fa-tag"></i> سعر الـ 1000: <b id="hint-price">0</b> ج.م
+                </div>
+
+                <div class="input-group">
+                    <span class="input-label">الرابط</span>
+                    <input id="order-link" class="modern-input" placeholder="ضع الرابط هنا">
+                </div>
+
+                <div class="input-group">
+                    <span class="input-label">الكمية</span>
+                    <input id="order-qty" type="number" class="modern-input" placeholder="العدد المطلوب" oninput="calcTotal()">
+                </div>
+
+                <div id="service-limits" style="display:none; animation: fadeInUp 0.5s;">
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span id="d-min" class="stat-val">0</span>
+                            <span class="stat-lbl">الحد الأدنى</span>
+                        </div>
+                        <div class="stat-box">
+                            <span id="d-max" class="stat-val">0</span>
+                            <span class="stat-lbl">الحد الأقصى</span>
+                        </div>
+                    </div>
+
+                    <div class="warning-card">
+                        <div class="w-item"><i class="fa-solid fa-triangle-exclamation"></i> <span>تأكد أن الحساب <b>عام (Public)</b>.</span></div>
+                        <div class="w-item"><i class="fa-solid fa-clock"></i> <span>لا تكرر الطلب لنفس الرابط قبل الاكتمال.</span></div>
+                        <div class="w-item"><i class="fa-solid fa-ban"></i> <span>الطلبات الخاطئة لا يمكن إلغاؤها.</span></div>
+                    </div>
+                </div>
+
+                <div class="price-area">
+                    <span style="color:#ccc; font-size:14px;">الإجمالي المطلوب</span>
+                    <span style="color:var(--gold-primary); font-size:24px; font-weight:900;" id="total-price">0.00 ج.م</span>
+                </div>
+
+                <button id="btn-submit" class="btn-main" onclick="submitOrder()">تأكيد الطلب ⚡</button>
+            </div>
+            
+            <div style="text-align:center; padding:20px; color:#555; font-size:12px;">
+                <p>جميع الحقوق محفوظة © دكانك استور 2026</p>
+                <i class="fa-solid fa-right-from-bracket" onclick="logout()" style="color:#666; font-size:18px; cursor:pointer; padding:10px;"></i>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="overlay" id="recharge-modal">
+        <div class="glass-card" style="max-width:350px;">
+            <h3 style="color:white; margin-top:0;">شحن الرصيد 💰</h3>
+            <div style="background:rgba(255,255,255,0.05); padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid var(--glass-border);">
+                <p style="margin:0; font-size:12px; color:#aaa;">أرسل فودافون كاش إلى:</p>
+                <h2 id="w-num" style="margin:10px 0; color:var(--gold-primary); letter-spacing:2px;">...</h2>
+                <small id="w-min" style="color:var(--danger); font-size:11px;">...</small>
+            </div>
+            <input id="r-amount" type="number" class="modern-input" placeholder="المبلغ (ج.م)" style="margin-bottom:10px;">
+            <input id="r-sender" type="tel" class="modern-input" placeholder="رقم المحفظة المُحول منها">
+            <button class="btn-main" onclick="sendRecharge()">أرسل الإشعار</button>
+            <button onclick="document.getElementById('recharge-modal').style.display='none'" class="btn-ghost" style="margin-top:10px; border:none;">إلغاء</button>
+        </div>
+    </div>
+
+    <div class="overlay" id="notif-modal">
+        <div class="glass-card" style="max-width:350px; padding:20px;">
+            <h3 style="color:white; margin-top:0; border-bottom:1px solid var(--glass-border); padding-bottom:10px;">
+                <i class="fa-solid fa-bell" style="color:var(--gold-primary)"></i> الإشعارات
+            </h3>
+            <div id="notif-list" style="max-height:300px; overflow-y:auto;">
+                <p style="text-align:center; color:#777; font-size:12px;">جاري التحميل...</p>
+            </div>
+            <button onclick="document.getElementById('notif-modal').style.display='none'" class="btn-ghost" style="margin-top:15px; border:none;">إغلاق</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, query, orderBy, limit, onSnapshot, runTransaction, getDoc, setDoc, where } 
+        from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // --- Config ---
+        const app = initializeApp({ apiKey: "AIzaSyCTEMxOtRHtjf5z1UJd-efqf88F3g_w-S0", authDomain: "digital-store-af306.firebaseapp.com", projectId: "digital-store-af306", storageBucket: "digital-store-af306.firebasestorage.app", messagingSenderId: "388553846104", appId: "1:388553846104:web:828d6530380d3ab1eb892d" });
+        const db = getFirestore(app);
+        
+        let currentUser = JSON.parse(localStorage.getItem('user')) || null;
+        let allProducts = [];
+        let walletData = {num:'Loading...', min:10};
+        let currentService = null;
+
+        // Init
+        checkAuth(); 
+        onSnapshot(doc(db,"config","main"), s => { if(s.exists()) walletData = {num:s.data().walletNumber, min:s.data().minDeposit}; });
+
+        // IMPORTANT: Trim categories to fix display issues
+        onSnapshot(collection(db,"categories"), s => {
+            const sel = document.getElementById('cat-select');
+            sel.innerHTML = '<option value="">اختر القسم...</option>';
+            s.forEach(d => { sel.innerHTML += `<option value="${d.data().name.trim()}">${d.data().name}</option>`; });
+        });
+
+        // IMPORTANT: Trim products category
+        onSnapshot(collection(db,"products"), s => {
+            allProducts = [];
+            s.forEach(d => { 
+                let p = d.data();
+                p.category = p.category ? p.category.trim() : "عام"; // Clean spaces
+                allProducts.push({...p, id: d.id}); 
+            });
+        });
+
+        function checkAuth() {
+            if(currentUser) {
+                document.getElementById('auth-view').style.display = 'none';
+                document.getElementById('main-view').style.display = 'block';
+                initUser();
+            } else {
+                document.getElementById('auth-view').style.display = 'flex';
+                document.getElementById('main-view').style.display = 'none';
+            }
+        }
+
+        function initUser() {
+            onSnapshot(doc(db,"users",currentUser.phone), d=>{
+                if(d.exists()){
+                    if(d.data().isBanned) { logout(); return; }
+                    currentUser.balance = Number(d.data().balance || 0);
+                    currentUser.name = d.data().name;
+                    document.getElementById('nav-bal').innerText = currentUser.balance.toFixed(1) + " ج.م";
+                    localStorage.setItem('user', JSON.stringify(currentUser));
+                }
+            });
+        }
+
+        window.toggleAuth = (mode) => {
+            document.getElementById('login-box').style.display = mode === 'login' ? 'block' : 'none';
+            document.getElementById('signup-box').style.display = mode === 'signup' ? 'block' : 'none';
+        }
+
+        window.login = async () => {
+            const p=document.getElementById('l-phone').value, pass=document.getElementById('l-pass').value;
+            if(!p || !pass) return alert("الرجاء إدخال البيانات");
+            const btn = document.querySelector('#login-box .btn-main'); btn.innerText = "جاري الدخول...";
+            const s=await getDoc(doc(db,"users",p));
+            if(s.exists() && s.data().password===pass) {
+                currentUser = {...s.data(), id:s.id}; localStorage.setItem('user',JSON.stringify(currentUser)); checkAuth();
+            } else { alert("بيانات خاطئة"); btn.innerText = "تسجيل الدخول"; }
+        };
+
+        // Auto Login after Register
+        window.register = async () => {
+            const n=document.getElementById('s-name').value;
+            const p=document.getElementById('s-phone').value;
+            const pass=document.getElementById('s-pass').value;
+            
+            if(!n||!p||!pass) return alert("الرجاء إكمال البيانات");
+            
+            const btn = document.querySelector('#signup-box .btn-main'); 
+            btn.innerText = "جاري التسجيل...";
+            
+            const check = await getDoc(doc(db,"users",p));
+            if(check.exists()) {
+                alert("رقم الهاتف مسجل مسبقاً");
+                btn.innerText = "انضم إلينا";
+                return;
+            }
+
+            const newUser = {
+                name:n, phone:p, password:pass, balance:0, 
+                joined:new Date().toISOString(), isBanned:false
+            };
+
+            await setDoc(doc(db,"users",p), newUser);
+            currentUser = newUser;
+            localStorage.setItem('user', JSON.stringify(currentUser));
+            alert("تم إنشاء الحساب بنجاح! جاري الدخول...");
+            checkAuth();
+        };
+
+        window.logout = () => {
+            if(confirm("هل تريد تسجيل الخروج؟")) { localStorage.removeItem('user'); currentUser = null; location.reload(); }
+        };
+
+        window.filterServices = () => {
+            const cat = document.getElementById('cat-select').value;
+            const servSel = document.getElementById('service-select');
+            servSel.innerHTML = '<option value="">-- اختر الخدمة --</option>';
+            document.getElementById('service-limits').style.display = 'none';
+            document.getElementById('rate-hint').style.display = 'none';
+            currentService = null;
+            document.getElementById('total-price').innerText = "0.00 ج.م";
+
+            if(!cat) return;
+            const filtered = allProducts.filter(p => p.category === cat);
+            if(filtered.length === 0) { servSel.innerHTML = '<option value="">لا توجد خدمات</option>'; return; }
+            filtered.forEach(p => {
+                const priceTxt = Number(p.rate) === 0 ? 'مجاني' : `${p.rate} ج.م`;
+                servSel.innerHTML += `<option value="${p.id}">${p.title} - ${priceTxt}</option>`;
+            });
+        };
+
+        window.updateServiceDetails = () => {
+            const sId = document.getElementById('service-select').value;
+            if(!sId) {
+                document.getElementById('service-limits').style.display = 'none';
+                document.getElementById('rate-hint').style.display = 'none';
+                currentService = null; return;
+            }
+
+            currentService = allProducts.find(p => p.id === sId);
+            if(currentService) {
+                document.getElementById('hint-price').innerText = currentService.rate;
+                document.getElementById('rate-hint').style.display = 'block';
+                document.getElementById('d-min').innerText = currentService.min;
+                document.getElementById('d-max').innerText = currentService.max;
+                document.getElementById('service-limits').style.display = 'block';
+                
+                const linkInp = document.getElementById('order-link');
+                linkInp.placeholder = currentService.title.includes("متابع") ? "رابط الحساب / البروفايل" : "رابط المنشور / الفيديو";
+                calcTotal();
+            }
+        };
+
+        window.calcTotal = () => {
+            const qty = Number(document.getElementById('order-qty').value);
+            const totalDisplay = document.getElementById('total-price');
+            if(!currentService || !qty) { totalDisplay.innerText = "0.00 ج.م"; return; }
+            const cost = (qty / 1000) * currentService.rate;
+            totalDisplay.innerText = Math.ceil(cost).toFixed(2) + " ج.م";
+        };
+
+        window.submitOrder = async () => {
+            if(!currentUser) return alert("يجب تسجيل الدخول");
+            if(!currentService) return alert("اختر خدمة");
+            const link = document.getElementById('order-link').value;
+            const qty = Number(document.getElementById('order-qty').value);
+            
+            if(!link) return alert("ضع الرابط");
+            if(qty < currentService.min || qty > currentService.max) return alert(`الكمية يجب أن تكون بين ${currentService.min} و ${currentService.max}`);
+            
+            const totalCost = Math.ceil((qty / 1000) * currentService.rate);
+            if(currentUser.balance < totalCost) return alert("رصيدك غير كافي! يرجى الشحن.");
+
+            const btn = document.getElementById('btn-submit'); btn.disabled = true; btn.innerText = "جاري المعالجة...";
+            try {
+                await runTransaction(db, async (t) => {
+                    const r = doc(db,"users",currentUser.phone); const u = await t.get(r);
+                    if((u.data().balance || 0) < totalCost) throw "رصيدك لا يكفي";
+                    t.update(r, {balance: (u.data().balance || 0) - totalCost});
+                });
+
+                await addDoc(collection(db,"orders"), {
+                    orderId: Math.floor(Math.random()*999999), customerName: currentUser.name, customerPhone: currentUser.phone,
+                    product: currentService.title, link: link, quantity: qty, price: Number(totalCost), 
+                    status: 'pending', date: new Date().toISOString()
+                });
+                alert("تم استلام طلبك بنجاح ✅");
+                document.getElementById('order-link').value = ""; document.getElementById('order-qty').value = ""; calcTotal();
+            } catch(e) { alert("خطأ: " + e); }
+            btn.disabled = false; btn.innerText = "تأكيد الطلب ⚡";
+        };
+
+        window.openRecharge = () => {
+            document.getElementById('w-num').innerText = walletData.num;
+            document.getElementById('w-min').innerText = `الحد الأدنى: ${walletData.min} ج.م`;
+            document.getElementById('recharge-modal').style.display='flex';
+        };
+        window.sendRecharge = async () => {
+            const amt = Number(document.getElementById('r-amount').value); const sen = document.getElementById('r-sender').value;
+            if(amt < walletData.min) return alert(`أقل مبلغ للشحن هو ${walletData.min}`);
+            await addDoc(collection(db,"recharge_requests"), { userId: currentUser.phone, userName: currentUser.name, amount: amt, sender: sen, status:'pending', date: new Date().toISOString() });
+            alert("تم إرسال طلب الشحن، سيتم مراجعته وإضافة الرصيد."); document.getElementById('recharge-modal').style.display='none';
+        };
+
+        // --- Notifications Logic ---
+        window.openNotifications = async () => {
+            if(!currentUser) return;
+            const modal = document.getElementById('notif-modal');
+            const list = document.getElementById('notif-list');
+            modal.style.display = 'flex';
+            list.innerHTML = '<p style="text-align:center;color:#777;font-size:12px;">جاري التحميل...</p>';
+
+            const qOrders = query(collection(db,"orders"), where("customerPhone","==",currentUser.phone), orderBy("date","desc"), limit(10));
+            // Broadcasts
+            const qBroadcasts = query(collection(db,"broadcasts"), orderBy("date","desc"), limit(3));
+
+            try {
+                const [sOrders, sBroadcasts] = await Promise.all([getDocs(qOrders), getDocs(qBroadcasts)]);
+                
+                let items = [];
+                sBroadcasts.forEach(d => {
+                    items.push({
+                        html: `<div class="notif-item" style="background:rgba(255,215,0,0.1); border:1px solid var(--gold-primary);">
+                            <div class="notif-icon" style="color:var(--gold-primary);"><i class="fa-solid fa-bullhorn"></i></div>
+                            <div class="info">
+                                <div class="notif-text" style="color:white; font-weight:bold;">${d.data().message}</div>
+                                <span class="notif-time">${new Date(d.data().date).toLocaleDateString('ar-EG')}</span>
+                            </div>
+                        </div>`,
+                        date: new Date(d.data().date)
+                    });
+                });
+
+                sOrders.forEach(d => {
+                    const o = d.data();
+                    let stText = "قيد التنفيذ"; let icon = '<i class="fa-solid fa-spinner"></i>'; let cls = "n-pending";
+                    if(o.status === 'completed' || o.status === 'done') { stText = "مكتمل"; icon = '<i class="fa-solid fa-check"></i>'; cls = "n-success"; }
+                    if(o.status === 'canceled') { stText = "ملغي"; icon = '<i class="fa-solid fa-xmark"></i>'; cls = "n-fail"; }
+                    
+                    items.push({
+                        html: `<div class="notif-item">
+                            <div class="notif-icon ${cls}">${icon}</div>
+                            <div class="info">
+                                <div class="notif-text">طلب: ${o.product} (${stText})</div>
+                                <span class="notif-time">${new Date(o.date).toLocaleDateString('ar-EG')}</span>
+                            </div>
+                        </div>`,
+                        date: new Date(o.date)
+                    });
+                });
+
+                items.sort((a,b) => b.date - a.date); 
+
+                if(items.length === 0) list.innerHTML = '<p style="text-align:center;color:#777;margin-top:20px;">لا توجد إشعارات</p>';
+                else list.innerHTML = items.map(i => i.html).join('');
+
+            } catch(e) {
+                console.error(e);
+                list.innerHTML = '<p style="text-align:center;color:red;">خطأ في التحميل</p>';
+            }
+        };
+
+        window.login=login; window.register=register; window.logout=logout; window.toggleAuth=toggleAuth;
+        window.filterServices=filterServices; window.updateServiceDetails=updateServiceDetails; window.calcTotal=calcTotal; window.submitOrder=submitOrder;
+        window.openRecharge=openRecharge; window.sendRecharge=sendRecharge; window.openNotifications=openNotifications;
+    </script>
+</body>
+</html>
